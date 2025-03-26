@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Analysis Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    {{ projectInfo.name }} - Code Analysis Report
+                </h1>
+                <p class="mt-2 text-sm text-gray-600">{{ projectInfo.description }}</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Navigation Tabs -->
+            <div class="mb-4 border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button v-for="tab in tabs" 
+                            :key="tab.id"
+                            @click="activeTab = tab.id"
+                            :class="['px-3', 'py-2', 'font-medium', 'text-sm', 
+                                    activeTab === tab.id 
+                                    ? 'border-b-2 border-blue-500 text-blue-600'
+                                    : 'text-gray-500 hover:text-gray-700']">
+                        {{ tab.name }}
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Overview Tab -->
+            <div v-show="activeTab === 'overview'" class="space-y-6">
+                <!-- Project Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white overflow-hidden shadow rounded-lg metric-card">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                                    <i class="mdi mdi-code-tags text-white text-2xl"></i>
+                                </div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-medium text-gray-900">Lines of Code</h3>
+                                    <p class="mt-1 text-2xl font-semibold text-gray-700">
+                                        {{ metrics.lines_of_code }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow rounded-lg metric-card">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                                    <i class="mdi mdi-function text-white text-2xl"></i>
+                                </div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-medium text-gray-900">Functions</h3>
+                                    <p class="mt-1 text-2xl font-semibold text-gray-700">
+                                        {{ metrics.functions_count }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow rounded-lg metric-card">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                                    <i class="mdi mdi-cube-outline text-white text-2xl"></i>
+                                </div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-medium text-gray-900">Classes</h3>
+                                    <p class="mt-1 text-2xl font-semibold text-gray-700">
+                                        {{ metrics.classes_count }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Quality -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Code Quality</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="complexityChart"></canvas>
+                        </div>
+                        <div>
+                            <canvas id="maintainabilityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issues Tab -->
+            <div v-show="activeTab === 'issues'" class="space-y-4">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Issues</h2>
+                    <div class="space-y-4">
+                        <div v-for="issue in issues" :key="issue.message" 
+                             :class="['p-4', 'rounded-md', 
+                                     issue.severity === 'error' ? 'bg-red-50' :
+                                     issue.severity === 'warning' ? 'bg-yellow-50' : 'bg-blue-50']">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i :class="['mdi', 'text-2xl',
+                                              issue.severity === 'error' ? 'mdi-alert-circle text-red-400' :
+                                              issue.severity === 'warning' ? 'mdi-alert text-yellow-400' : 
+                                              'mdi-information text-blue-400']"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium" 
+                                        :class="issue.severity === 'error' ? 'text-red-800' :
+                                               issue.severity === 'warning' ? 'text-yellow-800' : 'text-blue-800'">
+                                        {{ issue.message }}
+                                    </h3>
+                                    <div class="mt-2 text-sm" 
+                                         :class="issue.severity === 'error' ? 'text-red-700' :
+                                                issue.severity === 'warning' ? 'text-yellow-700' : 'text-blue-700'">
+                                        <p v-if="issue.file">File: {{ issue.file }}</p>
+                                        <p v-if="issue.line">Line: {{ issue.line }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Structure Tab -->
+            <div v-show="activeTab === 'structure'" class="space-y-6">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Project Structure</h2>
+                    <div class="space-y-4">
+                        <div v-for="dir in structure.directories" :key="dir.path" class="border rounded-lg p-4">
+                            <h3 class="font-medium text-gray-900">{{ dir.path || 'Root' }}</h3>
+                            <ul class="mt-2 space-y-2">
+                                <li v-for="file in dir.files" :key="file.path" class="flex items-center text-sm">
+                                    <i class="mdi mdi-file-document-outline mr-2"></i>
+                                    <span>{{ file.path }}</span>
+                                    <span class="ml-2 text-gray-500">({{ formatSize(file.size) }})</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tests Tab -->
+            <div v-show="activeTab === 'tests'" class="space-y-6">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Test Results</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="testResultsChart"></canvas>
+                        </div>
+                        <div>
+                            <canvas id="coverageChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h3 class="font-medium text-gray-900 mb-2">Test Files</h3>
+                        <ul class="space-y-2">
+                            <li v-for="file in testInfo.test_files" :key="file" 
+                                class="flex items-center text-sm">
+                                <i class="mdi mdi-test-tube mr-2"></i>
+                                <span>{{ file }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    activeTab: 'overview',
+                    tabs: [
+                        { id: 'overview', name: 'Overview' },
+                        { id: 'issues', name: 'Issues' },
+                        { id: 'structure', name: 'Structure' },
+                        { id: 'tests', name: 'Tests' }
+                    ],
+                    projectInfo: {},
+                    metrics: {},
+                    issues: [],
+                    structure: {},
+                    testInfo: {},
+                    testCoverage: {}
+                }
+            },
+            methods: {
+                formatSize(bytes) {
+                    const units = ['B', 'KB', 'MB', 'GB'];
+                    let size = bytes;
+                    let unitIndex = 0;
+                    while (size >= 1024 && unitIndex < units.length - 1) {
+                        size /= 1024;
+                        unitIndex++;
+                    }
+                    return `${size.toFixed(1)} ${units[unitIndex]}`;
+                },
+                initCharts() {
+                    // Complexity Chart
+                    new Chart(document.getElementById('complexityChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Low', 'Medium', 'High'],
+                            datasets: [{
+                                label: 'Code Complexity',
+                                data: [30, 50, 20],
+                                backgroundColor: ['#34D399', '#FBBF24', '#EF4444']
+                            }]
+                        }
+                    });
+
+                    // Maintainability Chart
+                    new Chart(document.getElementById('maintainabilityChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Good', 'Fair', 'Poor'],
+                            datasets: [{
+                                data: [70, 20, 10],
+                                backgroundColor: ['#34D399', '#FBBF24', '#EF4444']
+                            }]
+                        }
+                    });
+
+                    // Test Results Chart
+                    new Chart(document.getElementById('testResultsChart'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['Passed', 'Failed', 'Skipped'],
+                            datasets: [{
+                                data: [
+                                    this.testInfo.passed_tests,
+                                    this.testInfo.failed_tests,
+                                    this.testInfo.skipped_tests
+                                ],
+                                backgroundColor: ['#34D399', '#EF4444', '#FBBF24']
+                            }]
+                        }
+                    });
+
+                    // Coverage Chart
+                    new Chart(document.getElementById('coverageChart'), {
+                        type: 'radar',
+                        data: {
+                            labels: ['Line', 'Branch', 'Function'],
+                            datasets: [{
+                                label: 'Coverage %',
+                                data: [
+                                    this.testCoverage.line_coverage,
+                                    this.testCoverage.branch_coverage,
+                                    this.testCoverage.function_coverage
+                                ],
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: '#3B82F6'
+                            }]
+                        }
+                    });
+                }
+            },
+            mounted() {
+                // Load data from the JSON file
+                fetch('full_documentation.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.projectInfo = data.project_info;
+                        this.metrics = data.metrics;
+                        this.issues = data.issues;
+                        this.structure = data.structure;
+                        this.testInfo = data.test_info;
+                        this.testCoverage = data.test_coverage;
+                        this.$nextTick(() => {
+                            this.initCharts();
+                        });
+                    });
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html> 
