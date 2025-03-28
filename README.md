@@ -1,4 +1,4 @@
-# Code Analyzer
+# Code Analyzer with AI
 
 一个强大的代码分析工具，用于分析、评估和改进代码质量。
 
