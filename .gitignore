@@ -42,7 +42,7 @@ ENV/
 analysis_results/
 *.log
 *.json
-!config.json
+config.json
 !package.json
 !package-lock.json
 !tsconfig.json
