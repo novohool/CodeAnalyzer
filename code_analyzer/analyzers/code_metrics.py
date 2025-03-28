@@ -5,19 +5,20 @@ import json
 import os
 from typing import Dict, Any, List, Set
 from pathlib import Path
+from ..config import Config 
 
 from .base import BaseAnalyzer
 
 class CodeMetricsAnalyzer(BaseAnalyzer):
     """Analyzer for code metrics like complexity, maintainability etc."""
     
-    def __init__(self, repo_path: str):
+    def __init__(self, repo_path: str, config: Config):
         """Initialize code metrics analyzer.
         
         Args:
             repo_path: Path to the repository to analyze
         """
-        super().__init__(repo_path)
+        super().__init__(repo_path, config)
         self.metrics = {
             'functions': 0,
             'classes': 0,

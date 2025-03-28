@@ -1,0 +1,200 @@
+{
+    "llm": {
+        "api_key": "your-api-key-here",                 // LLM API密钥
+        "base_url": "https://api.example.com/v1",       // LLM API基础URL
+        "model": "model-name",                          // 使用的模型名称
+        "max_tokens": 1000,                             // 最大生成token数
+        "temperature": 0.7,                             // 生成温度，越高越随机
+        "stream": true,                                 // 是否使用流式响应
+        "timeout": 60,                                  // API超时时间(秒)
+        "prompt_template": "请分析以下代码文件的内容，并生成一个简洁的说明，包括：\n1. 文件的主要功能\n2. 关键组件或函数的作用\n3. 代码的主要特点\n\n文件路径: {file_path}\n代码内容:\n{file_content}\n\n请用中文回答，保持简洁明了。",
+        "retry_count": 3,                               // 重试次数
+        "retry_delay": 5,                               // 重试延迟(秒)
+        "batch_size": 5,                                // 批处理大小
+        "concurrent_requests": 3,                        // 并发请求数
+        "error_handling": {
+            "max_retries": 3,                           // 最大重试次数
+            "timeout_retry": true,                      // 超时是否重试
+            "rate_limit_retry": true,                   // 限流是否重试
+            "error_log_file": "llm_errors.log"          // 错误日志文件
+        }
+    },
+    "analyzer": {
+        "output_dir": "analysis_results",               // 分析结果输出目录
+        "code_extensions": {                            // 支持的文件扩展名
+            "backend": [".py", ".java", ".cpp", ".c", ".h", ".hpp", ".cs", ".go", ".rs", ".php", ".rb", ".swift", ".kt", ".scala"],
+            "frontend": [".js", ".jsx", ".ts", ".tsx", ".vue", ".html", ".css", ".scss", ".less"],
+            "config": [".yaml", ".yml", ".json", ".xml", ".ini", ".conf", ".env"],
+            "test": [".test.js", ".spec.js", "test_*.py", "*_test.py"],
+            "documentation": [".md", ".rst", ".txt", ".doc", ".docx", ".pdf"],
+            "database": [".sql", ".sqlite", ".db"],
+            "docker": [".dockerfile", "Dockerfile", "docker-compose.yml"],
+            "k8s": [".yaml", ".yml", ".json"]
+        },
+        "excluded_dirs": [                              // 排除的目录
+            "node_modules",
+            "__pycache__",
+            ".git",
+            "venv",
+            "dist",
+            "build",
+            "coverage",
+            "htmlcov",
+            ".idea",
+            ".vscode",
+            "tmp",
+            "temp",
+            "logs",
+            "cache",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache"
+        ],
+        "max_file_size": 1048576,                      // 最大文件大小(字节)
+        "file_patterns": {                              // 文件匹配模式
+            "backend": [
+                "app/api/**/*.py",
+                "app/routers/**/*.py",
+                "routes/**/*.py",
+                "controllers/**/*.py",
+                "services/**/*.py",
+                "models/**/*.py",
+                "utils/**/*.py",
+                "middleware/**/*.py",
+                "config/**/*.py"
+            ],
+            "frontend": [
+                "src/**/*.{js,jsx,ts,tsx}",
+                "components/**/*.{js,jsx,ts,tsx}",
+                "pages/**/*.{js,jsx,ts,tsx}",
+                "hooks/**/*.{js,jsx,ts,tsx}",
+                "utils/**/*.{js,jsx,ts,tsx}",
+                "styles/**/*.{css,scss,less}",
+                "assets/**/*"
+            ],
+            "test": [
+                "tests/**/*",
+                "test/**/*",
+                "__tests__/**/*",
+                "spec/**/*",
+                "**/*.test.{js,jsx,ts,tsx}",
+                "**/*.spec.{js,jsx,ts,tsx}"
+            ],
+            "documentation": [
+                "docs/**/*",
+                "documentation/**/*",
+                "**/*.md",
+                "**/*.rst",
+                "**/*.txt"
+            ],
+            "database": [
+                "migrations/**/*",
+                "seeds/**/*",
+                "**/*.sql",
+                "**/*.sqlite"
+            ],
+            "docker": [
+                "**/Dockerfile",
+                "**/docker-compose.yml",
+                "**/docker-compose.*.yml"
+            ],
+            "k8s": [
+                "k8s/**/*",
+                "kubernetes/**/*",
+                "**/*.k8s.yml",
+                "**/*.k8s.yaml"
+            ]
+        }
+    },
+    "route_analysis": {                                 // 路由分析配置
+        "client": {
+            "patterns": [                               // 前端路由文件匹配模式
+                "src/App.{js,jsx,ts,tsx}",
+                "src/router/**/*.{js,jsx,ts,tsx}",
+                "src/routes/**/*.{js,jsx,ts,tsx}",
+                "src/pages/**/*.{js,jsx,ts,tsx}",
+                "src/layouts/**/*.{js,jsx,ts,tsx}",
+                "src/components/**/*.{js,jsx,ts,tsx}"
+            ],
+            "base_dir": "client",                       // 前端基础目录
+            "frameworks": ["react", "vue", "angular", "svelte"],  // 支持的前端框架
+            "route_guards": ["auth", "permission", "role", "subscription"],  // 路由守卫类型
+            "route_metadata": ["title", "description", "permissions", "roles"]  // 路由元数据
+        },
+        "server": {
+            "patterns": [                               // 后端路由文件匹配模式
+                "app/api/**/*.py",
+                "app/routers/**/*.py",
+                "routes/**/*.py",
+                "controllers/**/*.py",
+                "views/**/*.py",
+                "endpoints/**/*.py"
+            ],
+            "base_dir": "server",                       // 后端基础目录
+            "frameworks": ["flask", "django", "fastapi", "express", "koa", "nest"],  // 支持的后端框架
+            "auth_methods": ["jwt", "session", "oauth", "api_key"],  // 认证方法
+            "route_metadata": ["methods", "auth_required", "rate_limit", "cache"]  // 路由元数据
+        }
+    },
+    "metrics": {                                        // 代码指标配置
+        "complexity_threshold": 10,                     // 复杂度阈值
+        "max_function_length": 50,                      // 最大函数长度
+        "max_class_length": 500,                        // 最大类长度
+        "max_file_length": 1000,                        // 最大文件长度
+        "metrics_to_collect": [                         // 需要收集的指标
+            "functions",
+            "classes",
+            "interfaces",
+            "api_endpoints",
+            "public_methods",
+            "private_methods",
+            "complexity",
+            "lines_of_code",
+            "comment_lines",
+            "blank_lines",
+            "cyclomatic_complexity",
+            "cognitive_complexity",
+            "maintainability_index",
+            "technical_debt",
+            "code_smells",
+            "duplication",
+            "coverage"
+        ]
+    },
+    "reporting": {                                      // 报告生成配置
+        "output_formats": ["json", "markdown", "html"], // 输出格式
+        "include_timestamps": true,                     // 是否包含时间戳
+        "include_file_stats": true,                     // 是否包含文件统计
+        "include_complexity_analysis": true,            // 是否包含复杂度分析
+        "include_dependency_analysis": true,            // 是否包含依赖分析
+        "include_test_coverage": true,                  // 是否包含测试覆盖率
+        "custom_templates": {                           // 自定义模板
+            "markdown": "templates/report.md",
+            "html": "templates/report.html",
+            "json": "templates/report.json"
+        }
+    },
+    "logging": {                                        // 日志配置
+        "level": "INFO",                                // 日志级别
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",  // 日志格式
+        "file": "code_analyzer.log",                    // 日志文件
+        "max_size": 10485760,                          // 最大日志大小(字节)
+        "backup_count": 5,                              // 备份数量
+        "console_output": true,                         // 是否输出到控制台
+        "file_output": true,                            // 是否输出到文件
+        "include_timestamps": true,                     // 是否包含时间戳
+        "include_thread_info": true,                    // 是否包含线程信息
+        "include_process_info": true                    // 是否包含进程信息
+    },
+    "performance": {                                    // 性能配置
+        "max_workers": 4,                               // 最大工作线程数
+        "chunk_size": 1000,                            // 数据块大小
+        "timeout": 300,                                 // 超时时间(秒)
+        "memory_limit": 1073741824,                    // 内存限制(字节)
+        "cache_enabled": true,                          // 是否启用缓存
+        "cache_dir": ".cache",                          // 缓存目录
+        "cache_ttl": 3600,                             // 缓存过期时间(秒)
+        "batch_size": 10,                              // 批处理大小
+        "concurrent_requests": 5                        // 并发请求数
+    }
+} 

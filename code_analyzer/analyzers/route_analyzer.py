@@ -4,13 +4,14 @@ import ast
 import re
 from typing import Dict, Any, List
 from pathlib import Path
+from ..config import Config 
 
 from .base import BaseAnalyzer
 
 class RouteAnalyzer(BaseAnalyzer):
     """Analyzes frontend and backend routes."""
     
-    def __init__(self, repo_path: str):
+    def __init__(self, repo_path: str, config: Config):
         super().__init__(repo_path)
         self.routes = {
             'frontend': [],
